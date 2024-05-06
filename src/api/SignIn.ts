@@ -1,5 +1,5 @@
-//const API_STR = "https://simple-application-api-production.up.railway.app";
-const API_STR = "http://localhost:3000/";
+const API_STR = "https://simple-application-api-production.up.railway.app/";
+//const API_STR = "http://localhost:3000/";
 
 export const loginUser = async (
   login: string,
