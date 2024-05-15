@@ -52,8 +52,8 @@ const store = useUserStore();
 const router = useIonRouter();
 
 const signIn = async () => {
-  await store.signIn(login.value, password.value);
-  router.push("/home");
+  const result = await store.signIn(login.value, password.value);
+  if (result) router.push("/home");
 };
 </script>
 

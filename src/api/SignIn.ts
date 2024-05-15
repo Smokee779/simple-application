@@ -1,5 +1,9 @@
-const API_STR = "https://simple-application-api-production.up.railway.app/";
+import { IUser } from "@/stores/userStore";
+
+export const API_STR =
+  "https://simple-application-api-production.up.railway.app/";
 //const API_STR = "http://localhost:3000/";
+export const AUTH_TYPE = "Bearer";
 
 export const loginUser = async (
   login: string,
@@ -21,19 +25,9 @@ export const loginUser = async (
   return data;
 };
 
-export const getCurrentUserLogin = async (
-  accesToken: string
-): Promise<string> => {
-  console.log(1, accesToken);
-  const token = "Bearer " + accesToken;
-  const raw = await fetch(API_STR + "login", {
-    method: "GET",
-    headers: {
-      Accept: "*/*",
-      "Content-Type": "application/json",
-      authorization: token,
-    },
-  });
-  const data: { username: string } = await raw.json();
-  return data.username;
+export const getUserInfo = async (accessToken: string): Promise<IUser> => {
+  const authorization = `${AUTH_TYPE} ${accessToken}`;
+  return (await (
+    await fetch(API_STR + "user-data", { headers: { authorization } })
+  ).json()) as IUser;
 };

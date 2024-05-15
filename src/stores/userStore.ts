@@ -1,28 +1,29 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
 import type { Ref } from "vue";
-import { getCurrentUserLogin, loginUser } from "@/api/SignIn";
+import { getUserInfo, loginUser } from "@/api/SignIn";
 
 export const useUserStore = defineStore("user-store", () => {
   const user: Ref<IUser> = ref({
     login: "",
     role: "",
   } as IUser);
-  const accesToken: Ref<string> = ref(getCookie("access_token"));
+  const accesToken: Ref<string> = ref(getCookie("access_token") || "");
 
-  const getUserName = async () => {
-    user.value.login = await getCurrentUserLogin(accesToken.value);
+  const getUser = async () => {
+    user.value = await getUserInfo(accesToken.value);
   };
 
-  const signIn = async (name: string, password: string) => {
+  const signIn = async (name: string, password: string): Promise<boolean> => {
     accesToken.value = (await loginUser(name, password)).access_token;
     document.cookie = "access_token=" + accesToken.value;
+    return !!accesToken.value;
   };
 
-  return { user, accesToken, getUserName, signIn };
+  return { user, accesToken, getUser, signIn };
 });
 
-interface IUser {
+export interface IUser {
   login: string;
   role: string;
 }
