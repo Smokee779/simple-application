@@ -2,8 +2,12 @@
   <ion-page>
     <ion-header :translucent="true">
       <ion-toolbar>
-        <ion-title>Simple Application</ion-title>
+        <div class="title-center">
+        <img src="D:\SimpleApplication\simple-application\public\vertikalnyj-logo.png" alt="vertikalnyj-logo" height="110" width="202" class="title-center">
+      </div>
+        <ion-title> Simple Application</ion-title>
       </ion-toolbar>
+      
     </ion-header>
 
     <ion-content :fullscreen="true">
@@ -17,35 +21,32 @@
           <div
             v-for="(post, idx) in posts"
             :key="idx"
-            style="background-color: brown"
+            style="background-color: "
           >
-            <div>
-              Id: <b>{{ post.id }}</b>
-            </div>
-            <div>
-              createdAt: <b>{{ post.createdAt }}</b>
-            </div>
-            <div>
-              description: <b>{{ post.description }}</b>
-            </div>
-            <div>
-              location: <b>{{ post.location }}</b>
-            </div>
-            <div>
-              name: <b>{{ post.name }}</b>
-            </div>
-            <div>
-              status: <b>{{ post.status }}</b>
-            </div>
-            <div>
-              type: <b>{{ post.type }}</b>
-            </div>
-            <div>
-              userId: <b>{{ post.userId }}</b>
-            </div>
+          <ion-card>
+    <ion-card-header>
+      <ion-card-title>Название: <b>{{ post.name }}</b></ion-card-title>
+      <ion-card-subtitle>Статус: <b>{{ post.status }}</b></ion-card-subtitle>
+    </ion-card-header>
+
+    <ion-card-content>
+      Id: <b>{{ post.id }}</b>
+      <div></div>
+      Дата и время: <b>{{ post.createdAt }}</b>
+      <div></div>
+      Описание: <b>{{ post.description }}</b>
+      <div></div>
+      Адрес: <b>{{ post.location }}</b>
+      <div></div>
+      Тип: <b>{{ post.type }}</b>
+      <div></div>
+      userId: <b>{{ post.userId }}</b>
+    </ion-card-content>
+  </ion-card>
+            
           </div>
         </div>
-        <div v-else>
+        <div class="Indentation" v-else>
           <ion-input
             type="text"
             placeholder="Id пользователя"
@@ -55,8 +56,7 @@
           <ion-input placeholder="Описание" v-model="currentPost.description" />
           <ion-select placeholder="Тип" v-model="currentPost.type">
             <ion-select-option value="Ремонт">Ремонт</ion-select-option>
-            <ion-select-option value="Обслуживание"
-              >Обслуживание</ion-select-option
+            <ion-select-option value="Обслуживание">Обслуживание</ion-select-option
             >
           </ion-select>
           <ion-input placeholder="Место" v-model="currentPost.location" />
@@ -81,9 +81,19 @@ import {
   IonSelect,
   IonSelectOption,
   IonButton,
+  IonInfiniteScroll,
+  IonFab, 
+  IonFabButton,
+  IonIcon,
+  IonCard,
+  IonCardContent,
+  IonCardHeader, 
+  IonCardSubtitle, 
+  IonCardTitle,
 } from "@ionic/vue";
 import { ComputedRef, Ref, computed, ref } from "vue";
 import { onMounted } from "vue";
+import { add } from 'ionicons/icons';
 
 const store = useUserStore();
 onMounted(async () => await store.getUser());
@@ -110,14 +120,22 @@ const sendPost = async () => {
 </script>
 
 <style scoped>
-#container {
+.Indentation{
+  margin-left: 10px;
+}
+
+.title-center{
   text-align: center;
+  align-items: center;
+  display:flex;
+  align-items:center;
+  justify-content: center;
+}
+#container {
 
   position: absolute;
   left: 0;
   right: 0;
-  top: 50%;
-  transform: translateY(-50%);
 }
 
 #container strong {
@@ -141,6 +159,5 @@ const sendPost = async () => {
 .fl {
   display: flex;
   flex-direction: column;
-  align-items: center;
 }
 </style>

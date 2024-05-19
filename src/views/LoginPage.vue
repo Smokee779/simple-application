@@ -5,7 +5,9 @@
         <ion-buttons>
           <ion-back-button></ion-back-button>
         </ion-buttons>
-        <ion-title>Вход</ion-title>
+        <div>
+      </div>
+        <ion-title class="title-center">Вход</ion-title>
       </ion-toolbar>
     </ion-header>
 
@@ -15,7 +17,9 @@
           <ion-title size="large">Вход</ion-title>
         </ion-toolbar>
       </ion-header>
-
+<div class="title-center">
+  <img src="D:\SimpleApplication\simple-application\public\vertikalnyj-logo.png" alt="vertikalnyj-logo" height="220" width="404" class="title-center">
+</div>
       <div id="container" class="fl">
         <ion-input placeholder="Логин" v-model="login"></ion-input>
         <ion-input
@@ -58,6 +62,13 @@ const signIn = async () => {
 </script>
 
 <style scoped>
+.title-center{
+  text-align: center;
+  align-items: center;
+  display:flex;
+  align-items:center;
+  justify-content: center;
+}
 #container {
   text-align: center;
 
