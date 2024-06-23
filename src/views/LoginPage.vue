@@ -5,8 +5,7 @@
         <ion-buttons>
           <ion-back-button></ion-back-button>
         </ion-buttons>
-        <div>
-      </div>
+        <div></div>
         <ion-title class="title-center">Вход</ion-title>
       </ion-toolbar>
     </ion-header>
@@ -17,10 +16,17 @@
           <ion-title size="large">Вход</ion-title>
         </ion-toolbar>
       </ion-header>
-<div class="title-center">
-  <img src="D:\SimpleApplication\simple-application\public\vertikalnyj-logo.png" alt="vertikalnyj-logo" height="220" width="404" class="title-center">
-</div>
+
       <div id="container" class="fl">
+        <div class="title-center">
+          <img
+            src="../../public/vertikalnyj-logo.png"
+            alt="vertikalnyj-logo"
+            height="220"
+            width="404"
+            class="title-center"
+          />
+        </div>
         <ion-input placeholder="Логин" v-model="login"></ion-input>
         <ion-input
           type="password"
@@ -30,10 +36,17 @@
         <ion-button @click="signIn()">Войти</ion-button>
       </div>
     </ion-content>
+    <ion-toast
+      :is-open="dangetToast"
+      message="Неверно заполненны данные"
+      :duration="1000"
+      @didDismiss="dangetToast = false"
+    >
+    </ion-toast>
   </ion-page>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import {
   IonContent,
   IonHeader,
@@ -44,6 +57,7 @@ import {
   IonInput,
   IonButtons,
   IonBackButton,
+  IonToast,
 } from "@ionic/vue";
 import { ref } from "vue";
 import { useUserStore } from "../stores/userStore";
@@ -55,18 +69,21 @@ const password = ref("");
 const store = useUserStore();
 const router = useIonRouter();
 
+const dangetToast = ref(false);
+
 const signIn = async () => {
   const result = await store.signIn(login.value, password.value);
   if (result) router.push("/home");
+  else dangetToast.value = true;
 };
 </script>
 
 <style scoped>
-.title-center{
+.title-center {
   text-align: center;
   align-items: center;
-  display:flex;
-  align-items:center;
+  display: flex;
+  align-items: center;
   justify-content: center;
 }
 #container {

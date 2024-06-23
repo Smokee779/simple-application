@@ -1,0 +1,161 @@
+<template>
+  <div style="background-color: ">
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title
+          >Название: <b>{{ post?.name }}</b></ion-card-title
+        >
+        <!-- <ion-card-subtitle
+          >Id: <b>{{ post?.id }}</b></ion-card-subtitle
+        > -->
+      </ion-card-header>
+
+      <ion-card-content>
+        Дата и время:
+        <b>{{
+          post?.createdAt
+            ?.toString()
+            .replaceAll("-", " ")
+            .replaceAll("T", "/")
+            .slice(0, 16)
+        }}</b>
+        <div></div>
+        Описание: <b>{{ post?.description }}</b>
+        <div></div>
+        Статус:
+        <select placeholder="Статус" v-model="status" @change="changeStatus">
+          <option
+            v-for="(status, idx) in statuses"
+            :key="idx"
+            :value="status.name"
+          >
+            {{ status.locale }}
+          </option>
+        </select>
+        <div></div>
+        Адрес: <b>{{ post?.location }}</b>
+        <div></div>
+        Тип: <b>{{ post?.type }}</b>
+        <div></div>
+        userId: <b>{{ post?.userId }}</b>
+        <div></div>
+        <ion-button @click="deletePost">Удалить</ion-button>
+      </ion-card-content>
+    </ion-card>
+  </div>
+</template>
+
+<script lang="ts" setup>
+import { API_STR } from "@/api/SignIn";
+import {
+  IonCard,
+  IonCardContent,
+  IonCardHeader,
+  IonCardSubtitle,
+  IonCardTitle,
+} from "@ionic/vue";
+import { ref } from "vue";
+import { useUserStore } from "@/stores/userStore";
+
+const store = useUserStore();
+const props = defineProps(["data"]);
+const emit = defineEmits(["deleted"]);
+const statuses = ref([
+  {
+    name: "open",
+    locale: "Открыта",
+  },
+  {
+    name: "inProcess",
+    locale: "В процессе",
+  },
+  {
+    name: "close",
+    locale: "Закрыта",
+  },
+]);
+
+const post = ref(props.data);
+const status = ref(post.value?.status);
+
+const changeStatus = async () => {
+  console.log(post.value.id, status.value);
+  const headers = new Headers();
+  headers.append("authorization", "Bearer " + store.accesToken);
+  headers.append("Content-Type", "application/json");
+
+  try {
+    const response = await fetch(API_STR + "posts/" + post.value.id, {
+      method: "PUT",
+      headers,
+      body: JSON.stringify({
+        status: status.value,
+      }),
+      redirect: "follow",
+    });
+    const result = await response.text();
+    console.log(result);
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+const deletePost = async () => {
+  const myHeaders = new Headers();
+  myHeaders.append("authorization", "Bearer " + store.accesToken);
+  try {
+    const response = await fetch(API_STR + "posts/" + post.value?.id, {
+      method: "DELETE",
+      headers: myHeaders,
+      redirect: "follow",
+    });
+    const result = await response.text();
+    console.log(result);
+  } catch (error) {
+    console.error(error);
+  }
+  emit("deleted");
+};
+</script>
+
+<style scoped>
+.Indentation {
+  margin-left: 10px;
+}
+
+.title-center {
+  text-align: center;
+  align-items: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+#container {
+  position: absolute;
+  left: 0;
+  right: 0;
+}
+
+#container strong {
+  font-size: 20px;
+  line-height: 26px;
+}
+
+#container p {
+  font-size: 16px;
+  line-height: 22px;
+
+  color: #8c8c8c;
+
+  margin: 0;
+}
+
+#container a {
+  text-decoration: none;
+}
+
+.fl {
+  display: flex;
+  flex-direction: column;
+}
+</style>

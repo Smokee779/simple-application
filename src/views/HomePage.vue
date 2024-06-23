@@ -3,13 +3,17 @@
     <ion-header :translucent="true">
       <ion-toolbar>
         <div class="title-center">
-        <img src="D:\SimpleApplication\simple-application\public\vertikalnyj-logo.png" alt="vertikalnyj-logo" height="110" width="202" class="title-center">
-      </div>
+          <img
+            src="../../public/vertikalnyj-logo.png"
+            alt="vertikalnyj-logo"
+            height="110"
+            width="202"
+            class="title-center"
+          />
+        </div>
         <ion-title> Simple Application</ion-title>
       </ion-toolbar>
-      
     </ion-header>
-
     <ion-content :fullscreen="true">
       <ion-header collapse="condense">
         <ion-toolbar>
@@ -18,45 +22,32 @@
       </ion-header>
       <div id="container" class="fl">
         <div v-if="role === 'admin'">
-          <div
-            v-for="(post, idx) in posts"
-            :key="idx"
-            style="background-color: "
-          >
           <ion-card>
-    <ion-card-header>
-      <ion-card-title>Название: <b>{{ post.name }}</b></ion-card-title>
-      <ion-card-subtitle>Статус: <b>{{ post.status }}</b></ion-card-subtitle>
-    </ion-card-header>
-
-    <ion-card-content>
-      Id: <b>{{ post.id }}</b>
-      <div></div>
-      Дата и время: <b>{{ post.createdAt }}</b>
-      <div></div>
-      Описание: <b>{{ post.description }}</b>
-      <div></div>
-      Адрес: <b>{{ post.location }}</b>
-      <div></div>
-      Тип: <b>{{ post.type }}</b>
-      <div></div>
-      userId: <b>{{ post.userId }}</b>
-    </ion-card-content>
-  </ion-card>
-            
-          </div>
+            <ion-title>Количество заявок: {{ filteredPosts.length }}</ion-title>
+            <ion-searchbar
+              placeholder="Название"
+              v-model="search"
+            ></ion-searchbar>
+            <ion-datetime
+              presentation="date"
+              :multiple="true"
+              @ion-change="(ev) => updateDates(ev?.detail?.value)"
+            ></ion-datetime>
+          </ion-card>
+          <the-card
+            v-for="post in filteredPosts"
+            :key="post?.id"
+            :data="post"
+            @deleted="updatePosts"
+          />
         </div>
         <div class="Indentation" v-else>
-          <ion-input
-            type="text"
-            placeholder="Id пользователя"
-            v-model="currentPost.id"
-          />
           <ion-input placeholder="Имя" v-model="currentPost.name" />
           <ion-input placeholder="Описание" v-model="currentPost.description" />
           <ion-select placeholder="Тип" v-model="currentPost.type">
             <ion-select-option value="Ремонт">Ремонт</ion-select-option>
-            <ion-select-option value="Обслуживание">Обслуживание</ion-select-option
+            <ion-select-option value="Обслуживание"
+              >Обслуживание</ion-select-option
             >
           </ion-select>
           <ion-input placeholder="Место" v-model="currentPost.location" />
@@ -64,11 +55,26 @@
         </div>
       </div>
     </ion-content>
+    <ion-toast
+      :is-open="postSended"
+      message="Заявка отправленна"
+      :duration="1000"
+      @didDismiss="postSended = false"
+    >
+    </ion-toast>
+    <ion-toast
+      :is-open="postDescarded"
+      message="Заполните данные"
+      swipe-gesture="vertical"
+      :duration="1000"
+      @didDismiss="postDescarded = false"
+    >
+    </ion-toast>
   </ion-page>
 </template>
-userId?: number; name: string; description: string; type: string; status: "open"
-| "close" | "inProcess"; location: string;
+
 <script setup lang="ts">
+import TheCard from "./TheCard.vue";
 import { IPost, addPost, getPosts } from "@/api/Posts";
 import { useUserStore } from "@/stores/userStore";
 import {
@@ -81,23 +87,27 @@ import {
   IonSelect,
   IonSelectOption,
   IonButton,
-  IonInfiniteScroll,
-  IonFab, 
+  IonSearchbar,
+  IonDatetime,
+  IonCard,
+  IonToast,
+  /*IonInfiniteScroll,
+  IonFab,
   IonFabButton,
   IonIcon,
   IonCard,
   IonCardContent,
-  IonCardHeader, 
-  IonCardSubtitle, 
-  IonCardTitle,
+  IonCardHeader,
+  IonCardSubtitle,
+  IonCardTitle,*/
 } from "@ionic/vue";
-import { ComputedRef, Ref, computed, ref } from "vue";
-import { onMounted } from "vue";
-import { add } from 'ionicons/icons';
+import { ComputedRef, Ref, computed, ref, onMounted } from "vue";
 
 const store = useUserStore();
 onMounted(async () => await store.getUser());
 
+const postSended = ref(false);
+const postDescarded = ref(false);
 const posts: Ref<IPost[]> = ref([]);
 const currentPost: Ref<IPost> = ref({
   userId: Number.NaN,
@@ -106,33 +116,79 @@ const currentPost: Ref<IPost> = ref({
   type: "",
   location: "",
 });
+const search = ref("");
+const selectedDates = ref();
 
 const role: ComputedRef<string> = computed(() => store.user.role);
 
-onMounted(async () => {
-  posts.value = await getPosts(store.accesToken);
+const filteredPostsByName = computed(() => {
+  if (!search.value) return posts.value;
+  return posts.value.filter((el) =>
+    el.name.toLowerCase().includes(search.value.toLowerCase())
+  );
 });
 
+const filteredPosts = computed(() => {
+  if (!selectedDates.value) return filteredPostsByName.value;
+  return filteredPostsByName.value.filter((el) => {
+    if (!el.createdAt) return false;
+    const check = new Date(el.createdAt).getTime();
+    const from = new Date(selectedDates.value[0])?.getTime();
+    const to = new Date(selectedDates.value[1])?.getTime();
+    return check <= to && check >= from;
+  });
+});
+
+onMounted(async () => {
+  await updatePosts();
+});
+
+const updatePosts = async () =>
+  (posts.value = await getPosts(store.accesToken));
+
 const sendPost = async () => {
+  if (
+    !(
+      !!isNaN(currentPost.value.id ?? Number.NaN) &&
+      !!currentPost.value.name &&
+      !!currentPost.value.description &&
+      !!currentPost.value.type &&
+      !!currentPost.value.location
+    )
+  ) {
+    postDescarded.value = true;
+    return;
+  }
+  postSended.value = true;
   console.log(currentPost.value);
   await addPost(currentPost.value, store.accesToken);
+};
+
+const updateDates = (array: any) => {
+  const ar = array as [];
+  if (!ar) return;
+  if (ar.length < 2) {
+    selectedDates.value = undefined;
+    return;
+  }
+  selectedDates.value = ar.map((el) => el + "T00:00:00.000Z");
+  console.log(selectedDates.value);
 };
 </script>
 
 <style scoped>
-.Indentation{
+.Indentation {
   margin-left: 10px;
 }
 
-.title-center{
+.title-center {
   text-align: center;
   align-items: center;
-  display:flex;
-  align-items:center;
+  display: flex;
+  align-items: center;
   justify-content: center;
 }
 #container {
-
   position: absolute;
   left: 0;
   right: 0;
