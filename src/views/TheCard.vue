@@ -5,11 +5,7 @@
         <ion-card-title
           >Название: <b>{{ post?.name }}</b></ion-card-title
         >
-        <!-- <ion-card-subtitle
-          >Id: <b>{{ post?.id }}</b></ion-card-subtitle
-        > -->
       </ion-card-header>
-
       <ion-card-content>
         Дата и время:
         <b>{{

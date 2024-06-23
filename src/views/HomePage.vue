@@ -28,6 +28,19 @@
               placeholder="Название"
               v-model="search"
             ></ion-searchbar>
+            <ion-card-content>
+              <ion-title>Сортировать по статусу: </ion-title>
+              <select v-model="selectedStatus">
+                <option
+                  v-for="(status, idx) in statuses"
+                  :key="idx"
+                  :value="status.name"
+                >
+                  {{ status.locale }}
+                </option>
+              </select>
+            </ion-card-content>
+            <ion-title>Сортировать по дате: </ion-title>
             <ion-datetime
               presentation="date"
               :multiple="true"
@@ -118,17 +131,38 @@ const currentPost: Ref<IPost> = ref({
 });
 const search = ref("");
 const selectedDates = ref();
+const selectedStatus = ref("");
+const statuses = ref([
+  {
+    name: "",
+    locale: "Не сортировать",
+  },
+  {
+    name: "open",
+    locale: "Открыта",
+  },
+  {
+    name: "inProcess",
+    locale: "В процессе",
+  },
+  {
+    name: "close",
+    locale: "Закрыта",
+  },
+]);
 
 const role: ComputedRef<string> = computed(() => store.user.role);
 
 const filteredPostsByName = computed(() => {
   if (!search.value) return posts.value;
   return posts.value.filter((el) =>
-    el.name.toLowerCase().includes(search.value.toLowerCase())
+    el.name
+      .toLowerCase()
+      .includes(search.value.toLowerCase().normalize().trim())
   );
 });
 
-const filteredPosts = computed(() => {
+const filteredPostsByStatus = computed(() => {
   if (!selectedDates.value) return filteredPostsByName.value;
   return filteredPostsByName.value.filter((el) => {
     if (!el.createdAt) return false;
@@ -139,8 +173,19 @@ const filteredPosts = computed(() => {
   });
 });
 
+const filteredPosts = computed(() => {
+  if (selectedStatus.value.normalize().trim() === "")
+    return filteredPostsByStatus.value;
+  return filteredPostsByStatus.value.filter((el) => {
+    return el.status
+      ?.toLowerCase()
+      .includes(selectedStatus.value.toLowerCase().normalize().trim());
+  });
+});
+
 onMounted(async () => {
   await updatePosts();
+  //setInterval(async () => await updatePosts(), 5_000);
 });
 
 const updatePosts = async () =>

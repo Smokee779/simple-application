@@ -2,6 +2,8 @@ import { IUser } from "@/stores/userStore";
 
 export const API_STR =
   "https://simple-application-api-production.up.railway.app/";
+// export const API_STR =
+//   "https://simple-application-api-production.up.railway.app/";
 //const API_STR = "http://localhost:3000/";
 export const AUTH_TYPE = "Bearer";
 
