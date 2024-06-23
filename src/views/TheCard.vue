@@ -37,7 +37,7 @@
         <div></div>
         Тип: <b>{{ post?.type }}</b>
         <div></div>
-        userId: <b>{{ post?.userId }}</b>
+        Отправитель: <b>{{ username }}</b>
         <div></div>
         <ion-button @click="deletePost">Удалить</ion-button>
       </ion-card-content>
@@ -46,7 +46,7 @@
 </template>
 
 <script lang="ts" setup>
-import { API_STR } from "@/api/SignIn";
+import { API_STR, loginUser } from "@/api/SignIn";
 import {
   IonCard,
   IonCardContent,
@@ -54,7 +54,7 @@ import {
   IonCardSubtitle,
   IonCardTitle,
 } from "@ionic/vue";
-import { ref } from "vue";
+import { onMounted, ref } from "vue";
 import { useUserStore } from "@/stores/userStore";
 
 const store = useUserStore();
@@ -77,6 +77,9 @@ const statuses = ref([
 
 const post = ref(props.data);
 const status = ref(post.value?.status);
+const username = ref("");
+
+onMounted(() => getUserById());
 
 const changeStatus = async () => {
   console.log(post.value.id, status.value);
@@ -115,6 +118,24 @@ const deletePost = async () => {
     console.error(error);
   }
   emit("deleted");
+};
+
+const getUserById = async () => {
+  const myHeaders = new Headers();
+  myHeaders.append("authorization", "Bearer " + store.accesToken);
+
+  try {
+    const response = await fetch(API_STR + "users/" + post.value["userId"], {
+      method: "GET",
+      headers: myHeaders,
+      redirect: "follow",
+    });
+    const result = await response.json();
+    console.log(result);
+    username.value = result.login;
+  } catch (error) {
+    console.error(error);
+  }
 };
 </script>
 
